@@ -180,7 +180,10 @@ function add_inline_popup_content() {
 	<div id='istributeVidListContentArea'>
 	</div>
 	<script>
-		function update_istribute_content_area() {
+
+    document.getElementById('TB_ajaxContent').style.width="auto";
+	   
+    	function update_istribute_content_area() {
 			jQuery.post(
 				ajaxurl, 
 				{
