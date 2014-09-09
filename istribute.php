@@ -165,7 +165,7 @@ function istributeVidList() {
 			$aspect = 1.67;
 		$h = 300;
 		$w = $h * $aspect;
-		echo '<li style="width: 18%; margin: 1% 10px; float: left;" onclick="'.htmlspecialchars('send_istribute_iframe('.json_encode($video->getPlayerUrl()).','.json_encode($w).','.json_encode($h).');').'"><img src="' . $video->getPreviewImage() . '"></img>' . $video->getTitle() . '</li>';
+		echo '<li style="width: 18%; margin: 1% 10px; float: left;" onclick="'.htmlspecialchars('send_istribute_iframe('.json_encode($video->getPlayerUrl()).','.json_encode($w).','.json_encode($h).');').'"><img src="https://joneirikdev-apiistributecom.webhosting.seria.net:8480' . $video->getPreviewImage() . '"></img>' . $video->getTitle() . '</li>';
 	}
 	echo '</ul>';
 }
