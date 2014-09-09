@@ -136,7 +136,7 @@ function addEditorButton($contexti) {
 	$title = 'An Inline Popup!';
 	$plugurl = plugins_url();
 	
-	$contexti .= '<a href="#TB_inline?width=400&inlineId=popup_container" id="insert-istribute-button" class="thickbox button insert-istribute add_is_video" data-editor="content" title="Add Istribute video"><span class="wp-media-buttons-icon"><img src="'.$plugurl.'/Istribute/favicon.png" style="max-width: 100%; padding: 0px; vertical-align: top;" /></span> Add Istribute video</a>';
+	$contexti .= '<a href="#TB_inline?width=700&inlineId=popup_container" id="insert-istribute-button" class="thickbox button insert-istribute add_is_video" data-editor="content" title="Add Istribute video"><span class="wp-media-buttons-icon"><img src="'.$plugurl.'/Istribute/favicon.png" style="max-width: 100%; padding: 0px; vertical-align: top;" /></span> Add Istribute video</a>';
 	ob_start();
 	?>
 	<script>
@@ -156,7 +156,7 @@ function istributeVidList() {
 	$istribute = getIstributeConnection();
 	
 	$videos = $istribute->getVideoList();
-	echo '<ul id="selectedVid">';
+	echo '<ul id="selectedVid" style="overflow: hidden;">';
 	foreach ($videos as $video) {
 		if (!is_object($video))
 			continue;
@@ -165,7 +165,7 @@ function istributeVidList() {
 			$aspect = 1.67;
 		$h = 300;
 		$w = $h * $aspect;
-		echo '<li style="width: 18%; margin: 1% 10px; float: left;" onclick="'.htmlspecialchars('send_istribute_iframe('.json_encode($video->getPlayerUrl()).','.json_encode($w).','.json_encode($h).');').'"><img src="https://joneirikdev-apiistributecom.webhosting.seria.net:8480' . $video->getPreviewImage() . '"></img>' . $video->getTitle() . '</li>';
+		echo '<li style="width: 18%; margin: 1% 10px; float: left;" onclick="'.htmlspecialchars('send_istribute_iframe('.json_encode($video->getPlayerUrl()).','.json_encode($w).','.json_encode($h).');').'"><img style="max-width:100%;" src="https://joneirikdev-apiistributecom.webhosting.seria.net:8480' . $video->getPreviewImage() . '"></img>' . $video->getTitle() . '</li>';
 	}
 	echo '</ul>';
 }
