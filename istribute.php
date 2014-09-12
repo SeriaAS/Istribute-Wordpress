@@ -109,24 +109,6 @@ function super_plugin_menu() {
 		add_submenu_page("istribute-settings", "Videos", "Videos", 0, "istribute-videos", "super_plugin_home");
 }
 
-function addContent($content) {
-
-	$position = get_post_meta( get_the_ID(), 'ist-position', true );
-	$old_content = $content;
-
-	if ($position == 'select-one') {
-		$content = '<div class="videoWrapper" style="/*position: relative; padding-bottom: 56.25%; padding-top: 25px; height: 0;*/">' . get_post_meta( get_the_ID(), 'ist-link', true ) . '</div>';
-		$content .= $old_content;
-	} else if ($position == 'select-two') {
-		$content .= '<div class="videoWrapper" style="/*position: relative; padding-bottom: 56.25%; padding-top: 25px; height: 0;*/">' . get_post_meta( get_the_ID(), 'ist-link', true ) . '</div>';
-	}
-    /*if( !empty( $content ) ) { echo $content; }*/
-return $content;
-
-}
-
-add_action('the_content', 'addContent');
-
 add_action('media_buttons_context',  'addEditorButton');
 add_action( 'admin_footer',  'add_inline_popup_content' );
 
@@ -136,12 +118,46 @@ function addEditorButton($contexti) {
 	$title = 'An Inline Popup!';
 	$plugurl = plugins_url();
 	
-	$contexti .= '<a href="#TB_inline?width=700&inlineId=popup_container" id="insert-istribute-button" class="thickbox button insert-istribute add_is_video" data-editor="content" title="Add Istribute video"><span class="wp-media-buttons-icon"><img src="'.$plugurl.'/Istribute/favicon.png" style="max-width: 100%; padding: 0px; vertical-align: top;" /></span> Add Istribute video</a>';
+	//$contexti .= '<a href="#TB_inline?width=700&inlineId=popup_container" id="insert-istribute-button" class="thickbox button insert-istribute add_is_video" data-editor="content" title="Add Istribute video"><span class="wp-media-buttons-icon"><img src="'.$plugurl.'/Istribute/favicon.png" style="max-width: 100%; padding: 0px; vertical-align: top;" /></span> Add Istribute video</a>';
+	$contexti .= '<a href="#" id="insert-istribute-button" class="button insert-istribute add_is_video" data-editor="content" title="Add Istribute video"><span class="wp-media-buttons-icon"><img src="'.$plugurl.'/Istribute/favicon.png" style="max-width: 100%; padding: 0px; vertical-align: top;" /></span> Add Istribute video</a>';
+	
 	ob_start();
 	?>
 	<script>
-		jQuery('#insert-istribute-button').click(function () {
+		jQuery('#insert-istribute-button').click(function (event) {
+			event.preventDefault();
 			update_istribute_content_area();
+
+			var id = 'istribute_popup_container';
+			var popupFrame = document.getElementById(id);
+			var margin = 150;
+			var width = jQuery(window).width() - (2 * margin);
+			var height = jQuery(window).height() - (1 * margin);
+			jQuery(popupFrame).css({
+				'position': 'fixed',
+				'top': margin/2+'px',
+				'right': margin+'px',
+				'display': 'block',
+				'background-color': 'white',
+				'width': width+'px',
+				'height': height+'px',
+				'z-index': '1000000',
+				'border': '1px solid #dddddd',
+				'overflow': 'auto'
+			});
+			var overlay = document.createElement('div');
+			overlay.setAttribute('id', id+'_overlay');
+			document.body.appendChild(overlay);
+			jQuery(overlay).css({
+				'position': 'fixed',
+				'top': '0px',
+				'left': '0px',
+				'width': '100%',
+				'height': '100%',
+				'background-color': 'black',
+				'z-index': '999999',
+				'opacity': '0.7'
+			});
 		});
 	</script>
 	<?php
@@ -150,13 +166,59 @@ function addEditorButton($contexti) {
   return $contexti;
 }
 
+add_action( 'wp_ajax_istributeVidUploader', 'istributeUploader' );
+
+function istributeUploader() {
+    $istribute = getIstributeConnection();
+    
+    if(isset($_FILES['file'])) {
+         $video = $istribute->uploadVideo($_FILES['file']['tmp_name']);
+         echo "<!DOCTYPE html>\n";
+         ?>
+         <title>Uploader</title>
+         <script>
+            parent.window.istributeFileUploaded(<?php echo json_encode($video->getId()); ?>);
+         </script>
+         <?php
+         die();
+    }
+
+    echo "<!DOCTYPE html>\n";
+    ?>
+    <title>Uploader</title>
+    <form id='uploadForm' enctype='multipart/form-data' action='' method='post' style='padding: 10px 30px 0px 0px;'>
+        <input type='file' name='file' value='Choose file' style='border: 1px solid rgb(167, 166, 166); color: rgb(167, 166, 166);'>
+        <input type='text' name='title' value='' placeholder='Title'>
+        <input type='text' name='description' value='' placeholder='Description'>
+        <input type='submit' value='Upload'>
+    </form>
+    <script>
+    (function () {
+        var onSubmit = function () {
+            parent.window.istributeFileUploadStarts();
+        };
+        var uploadForm = document.getElementById('uploadForm');
+        if (uploadForm.addEventListener)
+            uploadForm.addEventListener('submit', onSubmit, false);
+        else
+            uploadForm.attachEvent('onsubmit', onSubmit);
+    })();
+    </script>
+    <?php
+    die();
+}
+
 add_action( 'wp_ajax_istributeVidList', 'istributeVidList' );
 
 function istributeVidList() {
 	$istribute = getIstributeConnection();
+	$videos_pre = $istribute->getVideoList();
 	
-	$videos = $istribute->getVideoList();
-	echo '<ul id="selectedVid" style="overflow: hidden;">';
+	$videos = array();
+	foreach ($videos_pre as $video)
+	    array_unshift($videos, $video);
+	
+	echo '<ul id="selectedVid">';
 	foreach ($videos as $video) {
 		if (!is_object($video))
 			continue;
@@ -165,25 +227,58 @@ function istributeVidList() {
 			$aspect = 1.67;
 		$h = 300;
 		$w = $h * $aspect;
-		echo '<li style="width: 18%; margin: 1% 10px; float: left;" onclick="'.htmlspecialchars('send_istribute_iframe('.json_encode($video->getPlayerUrl()).','.json_encode($w).','.json_encode($h).');').'"><img style="max-width:100%;" src="https://joneirikdev-apiistributecom.webhosting.seria.net:8480' . $video->getPreviewImage() . '"></img>' . $video->getTitle() . '</li>';
+		echo '<li style="width: 18%; height: 200px; margin: 1% 10px; float: left; cursor: pointer;" onclick="'.htmlspecialchars('send_istribute_iframe('.json_encode($video->getPlayerUrl()).','.json_encode($w).','.json_encode($h).');').'"><img style="max-width:100%;" src="https://joneirikdev-apiistributecom.webhosting.seria.net:8480' . $video->getPreviewImage() . '"></img>' . $video->getTitle() . '</li>';
 	}
 	echo '</ul>';
+	die();
 }
 
 function add_inline_popup_content() {
-	
-	echo '<div id="popup_container" style="display: none;"><p>Video embed code:</p>';
-	//echo '<textarea id="istributeUrl" rows="4" cols="50" style="max-width: 100%;"><iframe src="" width="550" height="300">Not working</iframe></textarea>';
-	
 	ob_start();
 	?>
-	<div id='istributeVidListContentArea'>
+	<div id="istribute_popup_container" style="display: none;">
+	   <div style="height: 40px; padding: 10px 35px; background-color: rgb(61, 175, 175);"><img src="https://istribute.com/assets/img/istribute-logo.png" style="float: left;"></img><span onclick="closeIsPopup();" style="float: right;">X</span></div>
+    	<h3 style="padding: 0px 28px;" >Upload a video:</h3>
+    	<div id="istributeVidUploaderArea" style="padding: 0px 20px;">
+    	</div>
+    	<h3 style="padding: 0px 28px;">Choose a video:</h3>
+    	<div id='istributeVidListContentArea' style="padding: 0px 18px;">
+    	</div>
 	</div>
 	<script>
+	    function closeIsPopup() {
+		   document.getElementById('istribute_popup_container').style.display="none";
+		   var overlay = document.getElementById('istribute_popup_container_overlay');
+		   document.body.removeChild(overlay);
+	    }
 
-    document.getElementById('TB_ajaxContent').style.width="auto";
-	   
+	    (function () {
+		    var uploaderIframe;
+    	    var istributeInsertUpload = function() {
+    		    var width = '100%';
+    		    var height = '110px';
+    		    var containerElement = document.getElementById('istributeVidUploaderArea');
+    	    	var iframeElement = document.createElement('iframe');
+    			iframeElement.setAttribute('src', ajaxurl+'?action=istributeVidUploader');
+    			iframeElement.setAttribute('width', width);
+    			iframeElement.setAttribute('height', height);
+    			containerElement.appendChild(iframeElement);
+    			uploaderIframe = iframeElement;
+    	    }
+    	    window.istributeFileUploadStarts = function () {
+    		    jQuery(uploaderIframe).css({'display': 'none'});
+    	    }
+    	    window.istributeFileUploaded = function(id) {
+    		    uploaderIframe.parentNode.removeChild(uploaderIframe);
+    		    istributeInsertUpload();
+    		    update_istribute_content_area();
+    	    }
+    
+    	    istributeInsertUpload();
+	    })();
+		
     	function update_istribute_content_area() {
+    		document.getElementById('istributeVidListContentArea').innerHTML = "Loading...";
 			jQuery.post(
 				ajaxurl, 
 				{
@@ -207,12 +302,9 @@ function add_inline_popup_content() {
 			var textHtml = containerElement.innerHTML;
 			send_istribute_content(textHtml);
 		}
-		
 	</script>
-	<input type='button' onclick='send_istribute_content();' value='Test'>
 	<?php
 	echo ob_get_clean();
-	echo '</div>';
 }
 
 ?>
