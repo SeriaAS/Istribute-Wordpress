@@ -11,11 +11,12 @@ License: GNU General Public License v2 or later*/
 require_once('sdk/istribute.php');
 
 function getIstributeConnection() {
-	//$appid = get_option('istribute_appId');
-	//$appkey = get_option('istribute_appKey');
+	$appid = get_option('istribute_appId');
+	$appkey = get_option('istribute_appKey');
 	//$serverUrl = 'https://joneirikdev-apiistributecom.webhosting.seria.net';
 	//return new \Seria\istributeSdk\Istribute($appId, $appKey, $serverUrl );
-	return new \Seria\istributeSdk\Istribute('tZgTUJT','K2xv3FCYp2tzpmAWVY4ur4rPrxmh0FcA','https://joneirikdev-apiistributecom.webhosting.seria.net');
+	//return new \Seria\istributeSdk\Istribute('tZgTUJT','K2xv3FCYp2tzpmAWVY4ur4rPrxmh0FcA','https://joneirikdev-apiistributecom.webhosting.seria.net');
+    return new \Seria\istributeSdk\Istribute($appid,$appkey,'http://api.istribute.com');
 }
 
 function super_plugin_options() {
@@ -44,14 +45,13 @@ function super_plugin_options() {
 
 			<form name="istribute_form" method="post" action="<?=str_replace( '%7E', '~', $_SERVER['REQUEST_URI']); ?>">
 				<input type="hidden" name="istribute_hidden" value="Y">
-				<p style="font-size: 16px;"><?php _e("App Id: " ); ?><br/><input type="text" name="istribute_appId" value="<?=$appid; ?>" size="40"></p>
-				<p style="font-size: 16px;"><?php _e("App Key: "); ?><br/><input type="text" name="istribute_appKey" value="<?=$appkey; ?>" size="40"></p>
+				<p style="font-size: 16px;"><?php _e("App Id: " ); ?><br/><input type="text" style="max-width: 100%;" name="istribute_appId" value="<?=$appid; ?>" size="40"></p>
+				<p style="font-size: 16px;"><?php _e("App Key: "); ?><br/><input type="text" style="max-width: 100%;" name="istribute_appKey" value="<?=$appkey; ?>" size="40"></p>
 				<hr />
 				<p class="submit">
 					<input style="background-color: #fd6120;border: 0px;color: white;padding: 10px;font-weight: bold;font-size: 16px;"type="submit" name="Submit" value="<?php _e('Update Options', 'istribute_trdom' ) ?>" />
 				</p>
 			</form>
-			<p style="font-size: 16px;">You can now get the "appId" and "appKey" within the template by get_option('istribute_appId / istribute_appKey')</p>
 		</div>
 	<?php
 	}
@@ -91,15 +91,15 @@ function addEditorButton($contexti) {
 			jQuery(popupFrame).css({
 				'position': 'fixed',
 				'top': margin/2+'px',
-				'right': margin+'px',
+				'right': '15%',
 				'display': 'block',
 				'background-color': 'white',
-				'width': width+'px',
+				'width': '70%',
 				'height': height+'px',
 				'z-index': '1000000',
 				'border': '1px solid #dddddd',
 				'overflow': 'auto',
-				'background-color': '#19b0bf'
+				'background-color': '#ffffff'
 			});
 			var overlay = document.createElement('div');
 			overlay.setAttribute('id', id+'_overlay');
@@ -129,6 +129,8 @@ function istributeUploader() {
     
     if(isset($_FILES['file'])) {
          $video = $istribute->uploadVideo($_FILES['file']['tmp_name']);
+         $video->setTitle($_POST['vidtitle']);
+         $video->save();
          echo "<!DOCTYPE html>\n";
          ?>
          <title>Uploader</title>
@@ -142,11 +144,10 @@ function istributeUploader() {
     echo "<!DOCTYPE html>\n";
     ?>
     <title>Uploader</title>
-    <form id='uploadForm' enctype='multipart/form-data' action='' method='post' style='padding: 10px 30px 0px 0px;'>
-        <input type='file' name='file' value='Choose file' style='border: 1px solid rgb(167, 166, 166); color: white; '>
-        <input style="padding: 5px;" type='text' name='title' value='' placeholder='Title'>
-        <input style="padding: 5px;" type='text' name='description' value='' placeholder='Description'>
-        <input style="background-color: #fd6120;border: 0px;color: white;padding: 10px;font-weight: bold;font-size: 12px;" type='submit' value='Upload'>
+    <form id='uploadForm' enctype='multipart/form-data' action='#' method='post' style='padding: 10px 30px 0px 0px;'>
+        <input type='file' name='file' value='Choose file' style='max-width: 100%; border: 1px solid rgb(167, 166, 166); color: black; '>
+        <input style="padding: 2px; max-width: 100%;" type='text' id="vidtitle" name='vidtitle' value='' placeholder='Title'>
+        <input style="background-color: #fd6120;border: 0px;color: white;padding: 6px;font-weight: bold;font-size: 12px;" type='submit' value='Upload'>
     </form>
     <script>
     (function () {
@@ -183,7 +184,7 @@ function istributeVidList() {
 			$aspect = 1.67;
 		$h = 300;
 		$w = $h * $aspect;
-		echo '<li style="width: 18%; height: 200px; margin: 1% 10px; float: left; cursor: pointer;" onclick="'.htmlspecialchars('send_istribute_iframe('.json_encode($video->getPlayerUrl()).','.json_encode($w).','.json_encode($h).');').'"><img style="max-width:100%;" src="https://joneirikdev-apiistributecom.webhosting.seria.net:8480' . $video->getPreviewImage() . '"></img><p style=" color: white; font-size: 16px; margin: 0px;">' . $video->getTitle() . '</p></li>';
+		echo '<li style="width: 18%; height: 200px; min-width: 150px; margin: 1% 10px; float: left; cursor: pointer;" onclick="'.htmlspecialchars('send_istribute_iframe('.json_encode($video->getPlayerUrl()).','.json_encode($w).','.json_encode($h).');').'"><img style="max-width:100%;" src="http://api.istribute.com' . $video->getPreviewImage() . '"></img><p style=" color: black; font-size: 16px; margin: 0px;">' . $video->getTitle() . '</p></li>';
 	}
 	echo '</ul>';
 	die();
@@ -194,7 +195,7 @@ function add_inline_popup_content() {
     ob_start();
 	?>
 	<div id="istribute_popup_container" style="display: none; ">
-	   <div style="height: 40px; padding: 10px 35px; background-color: #0f4f6d;"><img src="https://istribute.com/assets/img/istribute-logo.png" style="float: left;"></img><img src="<?=$plugurl?>/Istribute/close.png" onclick="closeIsPopup();" style="float: right;"></img></div>
+	   <div style="height: 40px; padding: 10px 35px; background-color: #0f4f6d;"><img src="https://istribute.com/assets/img/istribute-logo.png" style="float: left;"></img><img class="close_button" src="<?=$plugurl?>/Istribute/close.png" onclick="closeIsPopup();" style="float: right; margin-top: 5px; cursor: pointer;"></img></div>
     	<h3 style="padding: 0px 28px;" >Upload a video:</h3>
     	<div id="istributeVidUploaderArea" style="padding: 0px 20px;">
     	</div>
@@ -202,6 +203,13 @@ function add_inline_popup_content() {
     	<div id='istributeVidListContentArea' style="padding: 0px 18px;">
     	</div>
 	</div>
+	<style>
+        @media screen and (max-width: 400px) {
+            .close_button {
+                display: none;
+            }
+        }
+    </style>
 	<script>
 	    function closeIsPopup() {
 		   document.getElementById('istribute_popup_container').style.display="none";
@@ -211,6 +219,7 @@ function add_inline_popup_content() {
 
 	    (function () {
 		    var uploaderIframe;
+		    var uploadingFlagElement;
     	    var istributeInsertUpload = function() {
     		    var width = '100%';
     		    var height = '110px';
@@ -224,11 +233,17 @@ function add_inline_popup_content() {
     	    }
     	    window.istributeFileUploadStarts = function () {
     		    jQuery(uploaderIframe).css({'display': 'none'});
+    		    uploadingFlagElement = document.createElement('div');
+    		    uploaderIframe.parentNode.appendChild(uploadingFlagElement);
+    		    uploadingFlagElement.innerHTML = "Uploading...";
     	    }
     	    window.istributeFileUploaded = function(id) {
+        	    uploadingFlagElement.parentNode.removeChild(uploadingFlagElement);
     		    uploaderIframe.parentNode.removeChild(uploaderIframe);
     		    istributeInsertUpload();
-    		    update_istribute_content_area();
+    		    setTimeout(function() {
+ 		    	   update_istribute_content_area();
+    		    }, 1000);
     	    }
     
     	    istributeInsertUpload();
