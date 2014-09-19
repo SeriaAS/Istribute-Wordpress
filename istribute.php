@@ -93,9 +93,12 @@ function addEditorButton($contexti) {
 				'overflow': 'auto',
 				'background-color': '#ffffff'
 			});
-			var overlay = document.createElement('div');
-			overlay.setAttribute('id', id+'_overlay');
-			document.body.appendChild(overlay);
+			var overlay = document.getElementById(id+'_overlay');
+			if (typeof(overlay) == 'undefined' || !overlay) {
+    			overlay = document.createElement('div');
+    			overlay.setAttribute('id', id+'_overlay');
+    			document.body.appendChild(overlay);
+			}
 			jQuery(overlay).css({
 				'position': 'fixed',
 				'top': '0px',
