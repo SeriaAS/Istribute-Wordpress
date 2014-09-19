@@ -13,9 +13,6 @@ require_once('sdk/istribute.php');
 function getIstributeConnection() {
 	$appid = get_option('istribute_appId');
 	$appkey = get_option('istribute_appKey');
-	//$serverUrl = 'https://joneirikdev-apiistributecom.webhosting.seria.net';
-	//return new \Seria\istributeSdk\Istribute($appId, $appKey, $serverUrl );
-	//return new \Seria\istributeSdk\Istribute('tZgTUJT','K2xv3FCYp2tzpmAWVY4ur4rPrxmh0FcA','https://joneirikdev-apiistributecom.webhosting.seria.net');
     return new \Seria\istributeSdk\Istribute($appid,$appkey,'http://api.istribute.com');
 }
 
@@ -34,9 +31,7 @@ function super_plugin_options() {
 		$appkey = get_option('istribute_appKey'); ?>
 
         <style>
-            #wpcontent {
-                background-color: #19b0bf;
-            }
+            #wpcontent {background-color: #19b0bf;}
         </style>
 		
 		<div class="wrap" style="color: white;">
@@ -60,7 +55,6 @@ function super_plugin_options() {
 add_action('admin_menu','super_plugin_menu');
 
 function super_plugin_menu() {
-    	//add_menu_page('Istribute', 'Istribute', 'manage_options', 'istribute-options', 'super_plugin_options', '', '', 6);
 		add_menu_page("Istribute", "Istribute", 0, "istribute-settings", "super_plugin_options", '', '', 8);
 }
 
@@ -72,12 +66,9 @@ function addEditorButton($contexti) {
 	$img = 'favicon.png';
 	$title = 'An Inline Popup!';
 	$plugurl = plugins_url();
-	
-	//$contexti .= '<a href="#TB_inline?width=700&inlineId=popup_container" id="insert-istribute-button" class="thickbox button insert-istribute add_is_video" data-editor="content" title="Add Istribute video"><span class="wp-media-buttons-icon"><img src="'.$plugurl.'/Istribute/favicon.png" style="max-width: 100%; padding: 0px; vertical-align: top;" /></span> Add Istribute video</a>';
 	$contexti .= '<a href="#" id="insert-istribute-button" class="button insert-istribute add_is_video" data-editor="content" title="Add Istribute video"><span class="wp-media-buttons-icon"><img src="'.$plugurl.'/Istribute/favicon.png" style="max-width: 100%; padding: 0px; vertical-align: top;" /></span> Add Istribute video</a>';
 	
-	ob_start();
-	?>
+	ob_start(); ?>
 	<script>
 		jQuery('#insert-istribute-button').click(function (event) {
 			event.preventDefault();
@@ -131,8 +122,7 @@ function istributeUploader() {
          $video = $istribute->uploadVideo($_FILES['file']['tmp_name']);
          $video->setTitle($_POST['vidtitle']);
          $video->save();
-         echo "<!DOCTYPE html>\n";
-         ?>
+         echo "<!DOCTYPE html>\n"; ?>
          <title>Uploader</title>
          <script>
             parent.window.istributeFileUploaded(<?php echo json_encode($video->getId()); ?>);
@@ -141,8 +131,7 @@ function istributeUploader() {
          die();
     }
 
-    echo "<!DOCTYPE html>\n";
-    ?>
+    echo "<!DOCTYPE html>\n"; ?>
     <title>Uploader</title>
     <form id='uploadForm' enctype='multipart/form-data' action='#' method='post' style='padding: 10px 30px 0px 0px;'>
         <input type='file' name='file' value='Choose file' style='max-width: 100%; border: 1px solid rgb(167, 166, 166); color: black; '>
@@ -196,8 +185,7 @@ function istributeVidList() {
 
 function add_inline_popup_content() {
     $plugurl = plugins_url();
-    ob_start();
-	?>
+    ob_start(); ?>
 	<div id="istribute_popup_container" style="display: none; ">
 	   <div style="height: 40px; padding: 10px 35px; background-color: #0f4f6d;"><img src="https://istribute.com/assets/img/istribute-logo.png" style="float: left;"></img><img class="close_button" src="<?=$plugurl?>/Istribute/close.png" onclick="closeIsPopup();" style="float: right; margin-top: 5px; cursor: pointer;"></img></div>
     	<h3 style="padding: 0px 28px;" >Upload a video:</h3>
@@ -282,6 +270,4 @@ function add_inline_popup_content() {
 	</script>
 	<?php
 	echo ob_get_clean();
-}
-
-?>
+} ?>
