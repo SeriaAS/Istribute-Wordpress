@@ -32,6 +32,7 @@ function super_plugin_options() {
 
         <style>
             #wpcontent {background-color: #19b0bf;}
+            #wpcontent {margin-left: 160px; padding-left: 20px;}
         </style>
 		
 		<div class="wrap" style="color: white;">
