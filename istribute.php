@@ -169,24 +169,28 @@ add_action( 'wp_ajax_istributeVidList', 'istributeVidList' );
 
 function istributeVidList() {
 	$istribute = getIstributeConnection();
-	$videos_pre = $istribute->getVideoList();
-	
-	$videos = array();
-	foreach ($videos_pre as $video)
-	    array_unshift($videos, $video);
-	
-	echo '<ul id="selectedVid">';
-	foreach ($videos as $video) {
-		if (!is_object($video))
-			continue;
-		$aspect = $video->getAspect();
-		if (!$aspect)
-			$aspect = 1.67;
-		$h = 300;
-		$w = $h * $aspect;
-		echo '<li style="width: 18%; height: 200px; min-width: 150px; margin: 1% 10px; float: left; cursor: pointer;" onclick="'.htmlspecialchars('send_istribute_iframe('.json_encode($video->getPlayerUrl()).','.json_encode($w).','.json_encode($h).');').'"><img style="max-width:100%;" src="http://api.istribute.com' . $video->getPreviewImage() . '"></img><p style=" color: black; font-size: 16px; margin: 0px;">' . $video->getTitle() . '</p></li>';
+	try {
+    	$videos_pre = $istribute->getVideoList();
+    	
+    	$videos = array();
+    	foreach ($videos_pre as $video)
+    	    array_unshift($videos, $video);
+    	
+    	echo '<ul id="selectedVid">';
+    	foreach ($videos as $video) {
+    		if (!is_object($video))
+    			continue;
+    		$aspect = $video->getAspect();
+    		if (!$aspect)
+    			$aspect = 1.67;
+    		$h = 300;
+    		$w = $h * $aspect;
+    		echo '<li style="width: 18%; height: 200px; min-width: 150px; margin: 1% 10px; float: left; cursor: pointer;" onclick="'.htmlspecialchars('send_istribute_iframe('.json_encode($video->getPlayerUrl()).','.json_encode($w).','.json_encode($h).');').'"><img style="max-width:100%;" src="http://api.istribute.com' . $video->getPreviewImage() . '"></img><p style=" color: black; font-size: 16px; margin: 0px;">' . $video->getTitle() . '</p></li>';
+    	}
+    	echo '</ul>';
+	} catch (\Seria\istributeSdk\IstributeErrorException $e) {
+	    echo '<p style="padding-left: 10px;">Something went wrong!<br>Check your App id / App key under in the Istribute tab, or contact post@seria.no</p>';
 	}
-	echo '</ul>';
 	die();
 }
 
@@ -235,7 +239,7 @@ function add_inline_popup_content() {
     		    jQuery(uploaderIframe).css({'display': 'none'});
     		    uploadingFlagElement = document.createElement('div');
     		    uploaderIframe.parentNode.appendChild(uploadingFlagElement);
-    		    uploadingFlagElement.innerHTML = "Uploading...";
+    		    uploadingFlagElement.innerHTML = "<p style='padding-left: 10px;'>Uploading...</p>";
     	    }
     	    window.istributeFileUploaded = function(id) {
         	    uploadingFlagElement.parentNode.removeChild(uploadingFlagElement);
@@ -250,7 +254,7 @@ function add_inline_popup_content() {
 	    })();
 		
     	function update_istribute_content_area() {
-    		document.getElementById('istributeVidListContentArea').innerHTML = "Loading...";
+    		document.getElementById('istributeVidListContentArea').innerHTML = "<p style='padding-left: 10px;'>Loading...</p>";
 			jQuery.post(
 				ajaxurl, 
 				{
